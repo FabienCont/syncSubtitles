@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <link rel="stylesheet" href="./style.css">
+  <title>srt sync</title>
+</head>
+<body>
+  <div class="container">
+  <h1>Sync subtitles</h1>
+  <h2>upload your srt file:</h3>
+  <span>copy the content of the .srt file into the textarea or upload it.</span>
+  <div class="import-container">
+      <label class="btn import-file-container">
+          upload
+          <input type="file" class="import-file"name="import-file"/>
+      </label>
+      <span class="import-filename"> Aucun fichier sélectionner</span>
+  </div>
+  <textarea class="file-textarea" name="subtitleFile" ></textarea>
+
+  <form action="">
+    <h2>choose the timeshift to sync</h2>
+    <div class="input-toSync-container">
+     <select name="directionToSync">
+  			<option value="+" selected="selected">+</option>
+  			<option value="-">-</option>
+  		</select>
+      <input type="number" class="time-input" name="hoursToSync" value="0" min="0" max="999" />
+      <span>hours</span>
+      <input type="number" class="time-input"  name="minToSync" value="0" min="0" max="59" />
+      <span>min</span>
+      <input type="number" class="time-input"  name="secToSync" value="0" min="0" max="59" />
+      <span>sec</span>
+      <input type="number"class="time-input"  name="msToSync" value="0" min="0" max="999" />
+      <span>ms</span>
+    </div>
+    <input class="btn" type="submit" name="submitSync" value="Validate">
+    <input class="btn" type="reset" value="reset">
+  </form>
+  <h2>upload your resync srt file:</h3>
+  <span>copy the generated content into a new .srt file or dowload it: </span>
+  <div class="upload-container">
+    <button class="upload-file-container btn" type="button" name="downloadButton">download</button>
+  </div>
+  <textarea class="file-textarea"filename="syncedFile" ></textarea>
+  </div>
+</body>
+  <script src="./main.js" charset="utf-8"></script>
+</html>
