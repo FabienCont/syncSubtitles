@@ -29,12 +29,41 @@ getDirectionToSync=function(){
   return document.getElementsByName("directionToSync")[0].value;
 }
 
-var getInputFilenameElement=function(){
-  return document.getElementsByClassName('import-filename')[0];
+var getSubtitleInputFilenameElement=function(){
+  return document.getElementsByClassName('import-subtitle-filename')[0];
 }
 
-var getInputFileElement=function(){
-  return document.getElementsByClassName('import-file')[0];
+var getSubtitleInputFileElement=function(){
+  return document.getElementsByClassName('import-subtitle-file')[0];
+}
+
+var getInputFileMovieElement=function(){
+  return document.getElementsByClassName('import-movie-file')[0];
+}
+
+var getMovieInputFilenameElement=function(){
+  return document.getElementsByClassName('import-movie-filename')[0];
+}
+
+var getMovieInputFileElement=function(){
+  return document.getElementsByClassName('import-movie-file')[0];
+}
+
+
+var getVideoPlayer=function(){
+  return document.getElementsByClassName('video-player')[0];
+}
+
+var getVideoPlayerTrack=function(){
+  return document.getElementsByClassName('video-player-track')[0];
+}
+
+var getResetBtnElement=function(){
+  return document.getElementsByClassName('btn-reset')[0];
+}
+
+var getTimeshiftSyncForm=function(){
+  return document.getElementsByClassName('timeshift-sync-form')[0];
 }
 
 var listenBlurInputNumber=function(){
@@ -43,6 +72,24 @@ var listenBlurInputNumber=function(){
     var maxValue=inputsNumber[i].max;
     inputsNumber[i].addEventListener("blur",controlValue);
   }
+}
+
+var videoObjectUrl;
+
+var setVideoObjectUrl=function(objectUrl){
+  if(videoObjectUrl){
+    window.URL.revokeObjectURL(videoObjectUrl);
+  }
+  videoObjectUrl=objectUrl;
+}
+
+var subtitleObjectUrl;
+
+var setSubtitleObjectUrl=function(objectUrl){
+  if(subtitleObjectUrl){
+    window.URL.revokeObjectURL(subtitleObjectUrl);
+  }
+  subtitleObjectUrl=objectUrl;
 }
 
 var controlValue=function(event) {
@@ -66,7 +113,11 @@ var syncFile=function(event){
     var initialText=getInitialFileTextArea();
     var resultTextArea=getResultFileTextArea();
     try{
-      resultTextArea.value=shiftDateSrtFile(initialText.value);
+      var filename=getSubtitleInputFilenameElement().textContent;
+      var subtitles=shiftDateSrtFile(initialText.value);
+      resultTextArea.value=subtitles;
+      updateVideoSubtitles(subtitles,filename);
+
     }catch(error){
       alert(error.message);
     }
@@ -164,7 +215,8 @@ var convertMsToTime=function(duration) {
 var listenDownloadButton=function(){
   document.getElementsByName("downloadButton")[0].addEventListener("click", function(){
       var content =getResultFileTextArea().value;
-      var filename = "generatedSubtitle.srt";
+
+      var filename = "Resync-"+getSubtitleInputFilenameElement().textContent;
 
       download(filename, content);
   }, false);
@@ -189,24 +241,84 @@ function download(filename, content) {
     document.body.removeChild(element);
 }
 
-var listenButtonImport= function(){
-  inputFile=getInputFileElement();
+var listenButtonImportSubtitle= function(){
+  inputFile=getSubtitleInputFileElement();
   inputFile.addEventListener('change', function (event) {
 
     var reader = new FileReader();
     reader.onload = (function(file){
          return function(event)
          {
-             getInputFilenameElement().textContent=file.name;
-             getInitialFileTextArea().value= event.target.result;
+
+           getSubtitleInputFilenameElement().textContent=file.name;
+           getInitialFileTextArea().value= event.target.result;
+
+           updateVideoSubtitles(getInitialFileTextArea().value,getSubtitleInputFilenameElement().textContent);
+
          }
      })(event.target.files[0]);
      reader.readAsText(event.target.files[0], 'ISO-8859-1');
+  });
+};
+
+var updateVideoSubtitles=function (subtitles,filename){
+  var wttFormatedSubtitle =convertSrtToWtt(convertToUtf8(subtitles));
+  var wttFile=new File([wttFormatedSubtitle],"sync-"+filename, {type: "text/plain"});
+  var fileUrl = window.URL.createObjectURL(wttFile);
+  getVideoPlayerTrack().src=fileUrl;
+  setSubtitleObjectUrl(fileUrl);
+}
+
+var convertToUtf8=function(str){
+  utfstring = unescape(encodeURIComponent(str));
+  return decodeURIComponent(escape(utfstring));
+}
+
+var convertSrtToWtt=function(srt){
+
+  var subtitles=srt.split("\n\n");
+  for (var i = 0; i < subtitles.length; i++) {
+    var subSrtFormat = subtitles[i].split("\n");
+    subSrtFormat[1] = subSrtFormat[1].split(",").join(".");
+    subSrtFormat.shift()
+    subtitles[i] = subSrtFormat.join("\n");
+  }
+  var wtt=subtitles.join("\n\n");
+  wtt="WEBVTT\n\n"+wtt;
+
+  return wtt;
+}
+
+var listenButtonImportMovie= function(){
+  inputFile=getMovieInputFileElement();
+  inputFile.addEventListener('change', function (event) {
+    var fileUrl = window.URL.createObjectURL(event.target.files[0]);
+    setVideoObjectUrl(fileUrl);
+    getMovieInputFilenameElement().textContent=event.target.files[0].name;
+    getVideoPlayer().src=fileUrl;
 
   });
 };
 
+var listenButtonReset=function(){
+  var btnReset=getResetBtnElement();
+  btnReset.addEventListener('click', function (event) {
+    event.preventDefault();
+    var initialText=getInitialFileTextArea();
+    var resultTextArea=getResultFileTextArea();
+    var timeshiftForm=getTimeshiftSyncForm();
+    timeshiftForm.reset();
+    var filename=getSubtitleInputFilenameElement().textContent;
+    var subtitles=shiftDateSrtFile(initialText.value);
+    resultTextArea.value=subtitles;
+    updateVideoSubtitles(subtitles,filename);
+  });
+}
+
+
 listenSubmit();
 listenBlurInputNumber();
 listenDownloadButton();
-listenButtonImport();
+listenButtonImportSubtitle();
+listenButtonImportMovie();
+listenButtonReset();

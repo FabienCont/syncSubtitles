@@ -18,11 +18,19 @@ html,body{
 }
 
 
+.video-player{
+  width:100%;
+  max-height: 20rem;
+  background-color: grey;
+
+}
+
+
 .file-textarea{
   width:100%;
   margin: 0 1rem 0 1rem;
   max-width: 30rem;
-  min-height:5rem;
+  min-height:10rem;
 }
 
 @media screen and (max-width: 600px) {
@@ -51,7 +59,7 @@ html,body{
 .import-file-container [type=file] {
     cursor: inherit;
     display: block;
-    font-size: 999px;
+    /*font-size: 999px;*/
     filter: alpha(opacity=0);
     height: 100%;
     width: 100%;
